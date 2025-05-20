@@ -69,20 +69,26 @@
     </form>
     <script src="/socket.io/socket.io.js"></script>
     <script>
+        let counter = 0;
         const socket = io({
-                auth: {
-                    serverOffset: 0
-                }
-            });
+            auth: {
+                serverOffset: 0
+            },
+            ackTimeout: 10000,
+            retries: 3,
+        });
 
-            const form = document.getElementById('form');
-            const input = document.getElementById('input');
-            const messages = document.getElementById('messages');
+        const form = document.getElementById('form');
+        const input = document.getElementById('input');
+        const messages = document.getElementById('messages');
 
         form.addEventListener('submit', (e) => {
             e.preventDefault();
             if (input.value) {
-                socket.emit('chat message', input.value);
+                const clientOffset = `${socket.id}-${counter++}`;
+                socket.emit('chat message', input.value, clientOffset, () => {
+                    console.log('Message delivered successfully');
+                });
                 input.value = '';
             }
         });
@@ -94,6 +100,6 @@
             socket.auth.serverOffset = serverOffset;
         });
     </script>
-    </body>
+</body>
 
 </html>
